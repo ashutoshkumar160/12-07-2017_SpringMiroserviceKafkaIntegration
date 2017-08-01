@@ -28,6 +28,7 @@ import com.stackroute.messaging.util.Listener;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+
 /**
  * KafkaRestController
  *
@@ -35,60 +36,59 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 @RestController
 public class KafkaRestController {
-    
-    @Value("${topic}")
-    private String topic;
-    
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
-    
-    @Autowired
-    private Listener listener;
 
-    @RequestMapping(method = RequestMethod.GET, path = "/hello")
-    public void hello() throws ExecutionException, InterruptedException {
-        ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topic, "Hello world");
-        future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-            @Override
-            public void onSuccess(SendResult<String, String> result) {
-                System.out.println("success");
-            }
+	@Value("${topic}")
+	private String topic;
 
-            @Override
-            public void onFailure(Throwable ex) {
-                System.out.println("failed");
-            }
-        });
-    }
-    
-    
-    @RequestMapping(value = "/sendmessage/", method = RequestMethod.POST)
-	public ResponseEntity<Void> sendMessage(@RequestBody Message message, 	UriComponentsBuilder ucBuilder) throws ExecutionException, InterruptedException {
+	@Autowired
+	private KafkaTemplate<String, String> kafkaTemplate;
+
+	@Autowired
+	private Listener listener;
+
+	@RequestMapping(method = RequestMethod.GET, path = "/hello")
+	public void hello() throws ExecutionException, InterruptedException {
+		ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topic, "Hello world");
+		future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+			@Override
+			public void onSuccess(SendResult<String, String> result) {
+				System.out.println("success");
+			}
+
+			@Override
+			public void onFailure(Throwable ex) {
+				System.out.println("failed");
+			}
+		});
+	}
+
+	@RequestMapping(value = "/sendmessage/", method = RequestMethod.POST)
+	public ResponseEntity<Void> sendMessage(@RequestBody Message message, UriComponentsBuilder ucBuilder)
+			throws ExecutionException, InterruptedException {
 		System.out.println("Sending Message " + message.getMessage());
-		
-		 ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(message.getTopic(), message.getUsername() +"|"+message.getCircle()+"|"+message.getMessage());
-	        future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-	            @Override
-	            public void onSuccess(SendResult<String, String> result) {
-	                System.out.println("success");
-	            }
 
-	            @Override
-	            public void onFailure(Throwable ex) {
-	                System.out.println("failed");
-	            }
-	        });
-	       
+		ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(message.getTopic(),
+				message.getUsername() + "|" + message.getCircle() + "|" + message.getMessage());
+		future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+			@Override
+			public void onSuccess(SendResult<String, String> result) {
+				System.out.println("success");
+			}
 
+			@Override
+			public void onFailure(Throwable ex) {
+				System.out.println("failed");
+			}
+		});
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(ucBuilder.path("/message/{id}").buildAndExpand("1234").toUri());
 		return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
 	}
 
-    
-    @RequestMapping(value = "/usermessage/", method = RequestMethod.POST)
-	public ResponseEntity<Void> createUser(@RequestBody User user, 	UriComponentsBuilder ucBuilder) throws JsonGenerationException, JsonMappingException, IOException {
+	@RequestMapping(value = "/usermessage/", method = RequestMethod.POST)
+	public ResponseEntity<Void> createUser(@RequestBody User user, UriComponentsBuilder ucBuilder)
+			throws JsonGenerationException, JsonMappingException, IOException {
 		System.out.println("Creating usermessage " + user.getName());
 		StringBuffer sb = new StringBuffer();
 		sb.append("{");
@@ -101,38 +101,34 @@ public class KafkaRestController {
 		sb.append(", 'salary':");
 		sb.append(user.getSalary());
 		sb.append("}");
-		System.out.println("JSON Message1:"+sb.toString());
-		
-		//Convert object to JSON string
+		System.out.println("JSON Message1:" + sb.toString());
+
+		// Convert object to JSON string
 		ObjectMapper mapper = new ObjectMapper();
 		String userJSon = mapper.writeValueAsString(user);
-		System.out.println("JSON Message2:"+userJSon);
-		
-		
-		//ObjectMapper mapper = new ObjectMapper();
-		//String jsonInString = "{'name' : 'mkyong'}";
+		System.out.println("JSON Message2:" + userJSon);
 
-		//JSON from file to Object
-		//User user = mapper.readValue(new File("c:\\user.json"), User.class);
+		// ObjectMapper mapper = new ObjectMapper();
+		// String jsonInString = "{'name' : 'mkyong'}";
 
-		//JSON from String to Object
-		//User user = mapper.readValue(jsonInString, User.class);
-		
-		
-		  ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topic, userJSon);
-	        future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-	            @Override
-	            public void onSuccess(SendResult<String, String> result) {
-	                System.out.println("success");
-	            }
+		// JSON from file to Object
+		// User user = mapper.readValue(new File("c:\\user.json"), User.class);
 
-	            @Override
-	            public void onFailure(Throwable ex) {
-	                System.out.println("failed");
-	            }
-	        });
-	        
-		
+		// JSON from String to Object
+		// User user = mapper.readValue(jsonInString, User.class);
+
+		ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topic, userJSon);
+		future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+			@Override
+			public void onSuccess(SendResult<String, String> result) {
+				System.out.println("success");
+			}
+
+			@Override
+			public void onFailure(Throwable ex) {
+				System.out.println("failed");
+			}
+		});
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(ucBuilder.path("/user/{id}").buildAndExpand(user.getId()).toUri());

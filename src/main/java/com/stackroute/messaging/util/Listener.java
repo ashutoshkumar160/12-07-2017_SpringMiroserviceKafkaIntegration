@@ -20,6 +20,7 @@ import com.stackroute.messaging.model.User;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+
 /**
  * Listener
  *
@@ -33,16 +34,16 @@ public class Listener {
 	public void listen(ConsumerRecord<?, ?> record) throws JsonParseException, JsonMappingException, IOException {
 		System.out.println("Message Received from topic:" + record);
 		String jsonString = record.toString();
-		String searchString ="value =";
-		jsonString = jsonString.substring(jsonString.indexOf(searchString)+searchString.length(), jsonString.length()-1);
+		String searchString = "value =";
+		jsonString = jsonString.substring(jsonString.indexOf(searchString) + searchString.length(),
+				jsonString.length() - 1);
 		System.out.println("Message Received from topic:" + jsonString);
-		
-		
+
 		User user = null;
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 
-			//jsonString = record.toString();
+			// jsonString = record.toString();
 			System.out.println("JSON Stringc:" + jsonString);
 			// JSON from file to Object
 			// User user = mapper.readValue(new File("c:\\user.json"),
@@ -55,22 +56,18 @@ public class Listener {
 			e.printStackTrace();
 		}
 
-		
 		System.out.println("JSON Converted Message:" + user.getId() + "|" + user.getName() + "|" + user.getAge() + "|"
 				+ user.getSalary());
 
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setMessageConverters(Arrays.asList(new MappingJackson2HttpMessageConverter()));
+		System.out.println("Calling Spring Rest Api with Kafka Message Received: http://localhost:8080/user/");
+		ResponseEntity<Void> response = restTemplate.postForEntity("http://localhost:8080/user/", user, Void.class);
 
-	    RestTemplate restTemplate = new RestTemplate();
-	    restTemplate.setMessageConverters(Arrays.asList(new MappingJackson2HttpMessageConverter()));
-	    System.out.println("Calling Spring Rest Api with Kafka Message Received: http://localhost:8080/user/");
-	    ResponseEntity<Void> response = restTemplate.postForEntity("http://localhost:8080/user/",
-	            user, Void.class);
-	    
-	    //return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
-	    
-	    System.out.println(response.getHeaders().toString());
+		// return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
 
-	    
+		System.out.println(response.getHeaders().toString());
+
 		countDownLatch1.countDown();
 	}
 

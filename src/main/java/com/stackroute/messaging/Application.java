@@ -9,14 +9,15 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * The messaging application demonstrates using the Spring Integration with Apache Kafka.
+ * The messaging application demonstrates using the Spring Integration with
+ * Apache Kafka.
  *
  * @author Dinesh Metkari (dineshmetkari@gmail.com)
  */
 @SpringBootApplication
 public class Application {
-    
-    public static void main(String[] args) {
-      SpringApplication.run(Application.class, args);
-    }
+
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args);
+	}
 }
